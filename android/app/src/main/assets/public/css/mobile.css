@@ -1,0 +1,38 @@
+*{box-sizing:border-box}
+body{
+margin:0;
+font-family:Arial,sans-serif;
+direction:rtl;
+background:#f4f7fb;
+color:#172033
+}
+.container{
+width:min(94%,900px);
+margin:30px auto
+}
+.card{
+background:white;
+padding:20px;
+margin:12px 0;
+border-radius:16px;
+box-shadow:0 3px 15px #0001
+}
+button{
+border:0;
+border-radius:10px;
+padding:12px 18px;
+margin:5px;
+cursor:pointer
+}
+input{
+width:100%;
+padding:12px;
+margin:6px 0;
+border:1px solid #ccd3df;
+border-radius:10px
+}
+a{color:#174ea6}
+pre{
+white-space:pre-wrap;
+word-break:break-word
+}

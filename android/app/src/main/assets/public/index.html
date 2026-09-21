@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<meta name="description" content="NRN-ALPHA6">
+<link rel="manifest" href="/manifest.json">
+<title>NRN-ALPHA6</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Tahoma,Arial,sans-serif;
+  background:#f3f4f6;
+  color:#111827
+}
+header{
+  background:#111827;
+  color:white;
+  padding:18px 16px;
+  position:sticky;
+  top:0;
+  z-index:10
+}
+.logo{
+  font-size:21px;
+  font-weight:800;
+  letter-spacing:.5px
+}
+.subtitle{
+  font-size:12px;
+  opacity:.75;
+  margin-top:5px
+}
+main{
+  max-width:720px;
+  margin:auto;
+  padding:16px
+}
+.card{
+  background:white;
+  border-radius:18px;
+  padding:18px;
+  margin-bottom:14px;
+  box-shadow:0 3px 14px rgba(0,0,0,.07)
+}
+h2{
+  margin:0 0 14px;
+  font-size:19px
+}
+input{
+  width:100%;
+  padding:13px;
+  margin:6px 0;
+  border:1px solid #d1d5db;
+  border-radius:11px;
+  font-size:15px;
+  outline:none
+}
+button{
+  width:100%;
+  border:0;
+  border-radius:11px;
+  padding:13px;
+  margin-top:8px;
+  font-size:15px;
+  font-weight:bold;
+  cursor:pointer;
+  background:#111827;
+  color:white
+}
+button.secondary{
+  background:#e5e7eb;
+  color:#111827
+}
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px
+}
+.tile{
+  background:#f9fafb;
+  border:1px solid #e5e7eb;
+  border-radius:14px;
+  padding:16px;
+  text-align:center;
+  font-weight:bold
+}
+.tile small{
+  display:block;
+  margin-top:6px;
+  color:#6b7280;
+  font-weight:normal
+}
+.status{
+  padding:11px;
+  border-radius:10px;
+  background:#ecfdf5;
+  color:#065f46;
+  margin-bottom:12px;
+  font-size:13px
+}
+.error{
+  background:#fef2f2;
+  color:#991b1b
+}
+.hidden{display:none}
+.userbox{
+  background:#eef2ff;
+  border-radius:12px;
+  padding:12px;
+  margin-bottom:12px;
+  font-size:13px
+}
+footer{
+  text-align:center;
+  color:#6b7280;
+  font-size:11px;
+  padding:20px
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">NRN-ALPHA6</div>
+  <div class="subtitle">شبکه دیجیتال ALPHA-6</div>
+</header>
+
+<main>
+
+<section id="statusCard" class="card">
+  <div id="status" class="status">در حال اتصال به سیستم...</div>
+</section>
+
+<section id="authCard" class="card">
+  <h2>ورود / ثبت‌نام</h2>
+
+  <input id="name" placeholder="نام کاربری">
+  <input id="email" type="email" placeholder="ایمیل">
+  <input id="password" type="password" placeholder="رمز عبور حداقل ۸ کاراکتر">
+
+  <button onclick="registerUser()">ثبت‌نام</button>
+  <button class="secondary" onclick="loginUser()">ورود</button>
+
+  <div id="authMessage" style="margin-top:10px;font-size:13px"></div>
+</section>
+
+<section id="dashboard" class="card hidden">
+  <h2>داشبورد</h2>
+
+  <div id="userBox" class="userbox"></div>
+
+  
+  <div class="card" style="background:#f8fafc;margin-bottom:14px">
+    <h2>🧠 نرون من</h2>
+    <div id="neuronBox" class="userbox">
+      هنوز نرونی برای این حساب ایجاد نشده است.
+    </div>
+    <button onclick="createNeuron()">ایجاد نرون</button>
+    <div id="neuronMessage" style="margin-top:10px;font-size:13px"></div>
+  </div>
+
+<div class="grid">
+    <div class="tile">
+      🧠
+      <small>نرون</small>
+    </div>
+
+    <div class="tile">
+      🌐
+      <small>شبکه</small>
+    </div>
+
+    <div class="tile">
+      🎁
+      <small>دعوت</small>
+    </div>
+
+    <div class="tile">
+      🛒
+      <small>محصولات</small>
+    </div>
+
+    <div class="tile">
+      📦
+      <small>سفارش‌ها</small>
+    </div>
+
+    <div class="tile">
+      👤
+      <small>حساب کاربری</small>
+    </div>
+  </div>
+
+  <button onclick="loadAccount()">دریافت اطلاعات حساب</button>
+  <button class="secondary" onclick="logout()">خروج</button>
+
+  <div id="accountResult" style="margin-top:12px;font-size:13px"></div>
+</section>
+
+</main>
+
+<footer>
+  NRN-ALPHA6
+</footer>
+
+<script>
+const API="";
+
+function setStatus(text,error=false){
+  const el=document.getElementById("status");
+  el.textContent=text;
+  el.className=error ? "status error" : "status";
+}
+
+function message(text,error=false){
+  const el=document.getElementById("authMessage");
+  el.textContent=text;
+  el.style.color=error ? "#991b1b" : "#065f46";
+}
+
+async function api(path,options={}){
+  const token=localStorage.getItem("alpha6_token");
+
+  const headers={
+    "Content-Type":"application/json",
+    ...(options.headers||{})
+  };
+
+  if(token){
+    headers.Authorization="Bearer "+token;
+  }
+
+  const response=await fetch(API+path,{
+    ...options,
+    headers
+  });
+
+  let data=null;
+
+  try{
+    data=await response.json();
+  }catch(e){
+    data={ok:false,error:"INVALID_SERVER_RESPONSE"};
+  }
+
+  return {response,data};
+}
+
+async function checkServer(){
+  try{
+    const {response,data}=await api("/api/health");
+
+    if(response.ok && data.ok){
+      setStatus("✓ سیستم ALPHA-6 فعال است");
+    }else{
+      setStatus("سیستم پاسخ نامعتبر داد",true);
+    }
+  }catch(e){
+    setStatus("ارتباط با سرور برقرار نشد",true);
+  }
+}
+
+async function registerUser(){
+  const name=document.getElementById("name").value.trim();
+  const email=document.getElementById("email").value.trim();
+  const password=document.getElementById("password").value;
+
+  if(!name || !email || !password){
+    message("نام، ایمیل و رمز عبور را وارد کنید",true);
+    return;
+  }
+
+  try{
+    const {response,data}=await api("/api/auth/register",{
+      method:"POST",
+      body:JSON.stringify({
+        username:name,
+        email,
+        password
+      })
+    });
+
+    if(response.ok && data.ok){
+      message("✓ ثبت‌نام با موفقیت انجام شد");
+    }else{
+      message(data.error || data.message || "ثبت‌نام ناموفق بود",true);
+    }
+  }catch(e){
+    message("خطا در ارتباط با سرور",true);
+  }
+}
+
+async function loginUser(){
+  const email=document.getElementById("email").value.trim();
+  const password=document.getElementById("password").value;
+
+  if(!email || !password){
+    message("ایمیل و رمز عبور را وارد کنید",true);
+    return;
+  }
+
+  try{
+    const {response,data}=await api("/api/auth/login",{
+      method:"POST",
+      body:JSON.stringify({email,password})
+    });
+
+    if(response.ok && data.ok && data.token){
+      localStorage.setItem("alpha6_token",data.token); localStorage.setItem("alpha6_user",JSON.stringify(data.user||{}));
+      localStorage.setItem("alpha6_user",JSON.stringify(data.user||{}));
+
+      showDashboard(data.user||{});
+      loadMyNeuron();
+      message("");
+    }else{
+      message(data.error || "ورود ناموفق بود",true);
+    }
+  }catch(e){
+    message("خطا در ارتباط با سرور",true);
+  }
+}
+
+function showDashboard(user){
+  document.getElementById("authCard").classList.add("hidden");
+  document.getElementById("dashboard").classList.remove("hidden");
+
+  document.getElementById("userBox").textContent=
+    "کاربر: "+(user.name||"کاربر")+" | نقش: "+(user.role||"user");
+}
+
+async function loadAccount(){
+  const result=document.getElementById("accountResult");
+
+  try{
+    const {response,data}=await api("/api/account/me");
+
+    if(response.ok && data.ok){
+      result.textContent=
+        "حساب فعال: "+
+        (data.user.name||"")+
+        " | "+
+        (data.user.email||"");
+    }else{
+      result.textContent=data.error||"دریافت حساب ناموفق بود";
+    }
+  }catch(e){
+    result.textContent="خطا در دریافت اطلاعات حساب";
+  }
+}
+
+
+async function loadMyNeuron(){
+  const box=document.getElementById("neuronBox");
+  if(!box) return;
+
+  try{
+    const {response,data}=await api("/api/neuron-core/me");
+
+    if(response.ok && data.ok && data.neuron){
+      const n=data.neuron;
+
+      box.innerHTML =
+        "شناسه نرون: <b>"+n.neuronUid+"</b><br>"+
+        "قیمت پایه: "+Number(n.priceToman).toLocaleString("fa-IR")+" تومان<br>"+
+        "وضعیت: "+n.status;
+    }else{
+      box.textContent="هنوز نرونی برای این حساب ایجاد نشده است.";
+    }
+  }catch(e){
+    box.textContent="دریافت اطلاعات نرون ناموفق بود.";
+  }
+}
+
+async function createNeuron(){
+  const message=document.getElementById("neuronMessage");
+
+  try{
+    const {response,data}=await api("/api/neuron-core/create",{
+      method:"POST",
+      body:JSON.stringify({})
+    });
+
+    if(response.ok && data.ok && data.neuron){
+      message.textContent="✓ نرون برای حساب شما ایجاد شد.";
+      await loadMyNeuron();
+    }else{
+      message.textContent=data.error || "ایجاد نرون ناموفق بود.";
+    }
+  }catch(e){
+    message.textContent="خطا در ارتباط با سرور.";
+  }
+}
+
+function logout(){
+  localStorage.removeItem("alpha6_token");
+  localStorage.removeItem("alpha6_user");
+
+  document.getElementById("dashboard").classList.add("hidden");
+  document.getElementById("authCard").classList.remove("hidden");
+  document.getElementById("accountResult").textContent="";
+}
+
+function logout(){localStorage.removeItem("alpha6_token");localStorage.removeItem("alpha6_user");location.reload();}
+
+function restoreSession(){
+  const token=localStorage.getItem("alpha6_token");
+  const raw=localStorage.getItem("alpha6_user");
+
+  if(token && raw){
+    try{
+      showDashboard(JSON.parse(raw));
+      loadMyNeuron();
+    }catch(e){}
+  }
+}
+
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("/service-worker.js")
+    .catch(err=>console.error("SERVICE WORKER:",err));
+}
+
+checkServer();
+restoreSession();
+</script>
+
+</body>
+</html>

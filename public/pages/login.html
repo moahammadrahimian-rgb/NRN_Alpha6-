@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="/css/mobile.css">
+<title>ورود</title>
+</head>
+<body>
+<div class="container">
+<div class="card">
+<h2>ورود</h2>
+<input id="email" placeholder="ایمیل">
+<input id="password" type="password" placeholder="رمز عبور">
+<button onclick="login()">ورود</button>
+<pre id="out"></pre>
+</div>
+</div>
+<script>
+async function login(){
+const r=await fetch("/api/auth/login",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+email:document.getElementById("email").value,
+password:document.getElementById("password").value
+})
+});
+const x=await r.json().catch(()=>({}));
+if(x.token)localStorage.setItem("alpha6_token",x.token);
+document.getElementById("out").textContent=JSON.stringify(x,null,2);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="/css/mobile.css">
+<title>راهنما</title>
+</head>
+<body>
+<div class="container">
+<div class="card">
+<h2>راهنمای ALPHA-6</h2>
+<pre id="out">در حال دریافت...</pre>
+</div>
+</div>
+<script src="/js/app.js"></script>
+<script>
+api("/api/help").then(x=>{
+ out.textContent=JSON.stringify(x,null,2);
+});
+</script>
+</body>
+</html>

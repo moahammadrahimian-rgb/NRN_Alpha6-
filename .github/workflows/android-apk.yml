@@ -29,9 +29,17 @@ jobs:
         run: npm ci
 
 
-      - name: Build APK
-        working-directory: android
-        run: ./gradlew :app:assembleDebug --no-daemon
+              - name: Setup Gradle 8.13
+                uses: gradle/actions/setup-gradle@v4
+                with:
+                  gradle-version: '8.13'
+
+              - name: Verify Gradle
+                run: gradle --version
+
+              - name: Build APK
+                working-directory: android
+                run: gradle :app:assembleDebug --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4

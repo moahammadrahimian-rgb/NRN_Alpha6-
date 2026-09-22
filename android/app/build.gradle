@@ -1,5 +1,4 @@
 apply plugin: 'com.android.application'
-apply plugin: 'com.android.application'
 
 android {
     namespace 'com.nrn.alpha6'
@@ -12,4 +11,8 @@ android {
         versionCode 1
         versionName '1.0'
     }
+}
+
+dependencies {
+    implementation project(':capacitor-android')
 }

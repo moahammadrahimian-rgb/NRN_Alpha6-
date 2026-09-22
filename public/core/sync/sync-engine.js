@@ -12,6 +12,13 @@
 
         for (const item of queue.all()) {
           try {
+            if (item.attempts >= queue.maxAttempts()) {
+              continue;
+            }
+
+            item.attempts = (item.attempts || 0) + 1;
+            queue.update(item.id, { attempts: item.attempts });
+
             await window.ALPHA6Retry.run(async () => {
               const response = await fetch(item.url, {
                 method: item.method || 'POST',

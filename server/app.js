@@ -17,6 +17,10 @@ app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors());
 app.use(express.json());
 
+const siteControlRoutes = require("./routes/siteControlRoutes");
+app.use("/api/admin/site-control", siteControlRoutes);
+
+
 /* ---------- HEALTH ---------- */
 app.get("/api/health", (req, res) => {
   res.json({ ok: true, project: "NRN-ALPHA6", status: "running" });
@@ -42,6 +46,47 @@ app.get("/api/modules/run/:id", (req, res) => {
 
 app.get("/api/modules/run-all", (req, res) => {
   res.json(alpha6.runAll());
+});
+
+/* ---------- SITE LOCK ---------- */
+app.use(async (req, res, next) => {
+  try {
+    if (
+      req.path.startsWith("/api/admin/site-control") ||
+      req.path.startsWith("/api/auth") ||
+      req.path === "/api/health" ||
+      req.path.startsWith("/owner") ||
+      req.path.startsWith("/panel") ||
+      req.path.startsWith("/admin") ||
+      req.path.startsWith("/management")
+    ) {
+      return next();
+    }
+
+    const { getDB } = require("./database/database");
+    const db = await getDB();
+
+    const result = db.exec(`
+      SELECT status, reason
+      FROM site_control
+      WHERE id = 1
+    `);
+
+    const row = result[0]?.values[0];
+
+    if (row && row[0] === "LOCKED") {
+      return res.status(503).json({
+        ok: false,
+        error: "SITE_LOCKED",
+        message: "SITE_TEMPORARILY_LOCKED"
+      });
+    }
+
+    return next();
+  } catch (err) {
+    console.error("SITE_LOCK_CHECK_ERROR:", err.message);
+    return next();
+  }
 });
 
 /* ---------- PUBLIC ---------- */

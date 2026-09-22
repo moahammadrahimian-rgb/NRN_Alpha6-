@@ -345,6 +345,21 @@ async function initDB() {
     )
   `);
 
+  db.run(`
+    CREATE TABLE IF NOT EXISTS site_control(
+      id INTEGER PRIMARY KEY CHECK(id = 1),
+      status TEXT NOT NULL DEFAULT 'ONLINE',
+      reason TEXT DEFAULT '',
+      updated_by INTEGER,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  db.run(`
+    INSERT OR IGNORE INTO site_control(id, status)
+    VALUES(1, 'ONLINE')
+  `);
+
   saveDB();
 }
 

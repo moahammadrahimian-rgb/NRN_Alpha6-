@@ -1,11 +1,19 @@
 (function () {
   const SyncEngine = {
     running: false,
+    lastRunAt: null,
+    lastError: null,
 
     async flush() {
       if (this.running || !navigator.onLine) return;
 
       this.running = true;
+      this.lastRunAt = Date.now();
+      this.lastError = null;
+
+      window.dispatchEvent(new CustomEvent("alpha6:sync", {
+        detail: { running: true }
+      }));
 
       try {
         const queue = window.ALPHA6OfflineQueue;
@@ -38,11 +46,27 @@
 
             queue.remove(item.id);
           } catch (error) {
-            break;
+            this.lastError = error.message || "SYNC_FAILED";
+
+            queue.update(item.id, {
+              lastError: this.lastError,
+              lastAttemptAt: Date.now()
+            });
+
+            continue;
           }
         }
       } finally {
         this.running = false;
+
+        window.dispatchEvent(new CustomEvent("alpha6:sync", {
+          detail: {
+            running: false,
+            queueSize: queue.size(),
+            lastRunAt: this.lastRunAt,
+            lastError: this.lastError
+          }
+        }));
       }
     },
 

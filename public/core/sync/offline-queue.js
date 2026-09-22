@@ -22,6 +22,7 @@
 
       const item = {
         id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+      operationId: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + "-" + Math.random(),
         createdAt: Date.now(),
         attempts: 0,
         ...operation

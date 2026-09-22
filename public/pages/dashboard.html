@@ -20,5 +20,111 @@ const r=await fetch("/api/health");
 document.getElementById("out").textContent=await r.text();
 }
 </script>
+
+<!-- ALPHA-6 SITE LOCK MANAGEMENT -->
+<section id="alpha6-site-lock-panel" style="margin:20px 0;padding:18px;border:1px solid #d4af37;border-radius:14px;background:#111827;color:#fff">
+  <h3 style="margin:0 0 10px">کنترل وضعیت سایت</h3>
+  <div id="alpha6-site-lock-status" style="margin-bottom:12px;font-weight:bold">در حال دریافت وضعیت...</div>
+  <input id="alpha6-site-lock-reason" type="text" maxlength="500"
+         placeholder="دلیل توقف (اختیاری)"
+         style="width:100%;box-sizing:border-box;padding:10px;margin-bottom:10px;border-radius:8px;border:1px solid #555">
+  <button id="alpha6-site-lock-btn"
+          style="padding:11px 18px;border:0;border-radius:9px;cursor:pointer;font-weight:bold">
+    دریافت وضعیت
+  </button>
+</section>
+
+<script>
+(function () {
+  const statusEl = document.getElementById("alpha6-site-lock-status");
+  const btn = document.getElementById("alpha6-site-lock-btn");
+  const reasonEl = document.getElementById("alpha6-site-lock-reason");
+
+  async function request(path, options = {}) {
+    const token = localStorage.getItem("alpha6_token");
+
+    const headers = {
+      "Content-Type": "application/json",
+      ...(options.headers || {})
+    };
+
+    if (token) headers.Authorization = "Bearer " + token;
+
+    const r = await fetch(path, {
+      ...options,
+      headers
+    });
+
+    const data = await r.json().catch(() => ({}));
+
+    if (!r.ok) {
+      throw new Error(data.error || ("HTTP_" + r.status));
+    }
+
+    return data;
+  }
+
+  async function refresh() {
+    try {
+      const data = await request("/api/admin/site-control");
+      const locked = data.site.status === "LOCKED";
+
+      statusEl.textContent = locked
+        ? "🔒 وضعیت سایت: LOCKED"
+        : "🟢 وضعیت سایت: ONLINE";
+
+      statusEl.style.color = locked ? "#ff6b6b" : "#55d98a";
+
+      btn.textContent = locked
+        ? "🟢 راه‌اندازی مجدد سایت"
+        : "🔒 توقف دستی سایت";
+
+      btn.style.background = locked ? "#238636" : "#b42318";
+      btn.style.color = "#fff";
+    } catch (err) {
+      statusEl.textContent = "خطا: " + err.message;
+      btn.textContent = "تلاش دوباره";
+    }
+  }
+
+  btn.addEventListener("click", async function () {
+    try {
+      const current = await request("/api/admin/site-control");
+
+      if (current.site.status === "LOCKED") {
+        if (!confirm("سایت در وضعیت LOCKED است. راه‌اندازی مجدد انجام شود؟")) return;
+
+        const second = prompt("برای تأیید، عبارت START را وارد کنید:");
+        if (second !== "START") return;
+
+        await request("/api/admin/site-control/unlock", {
+          method: "POST",
+          body: JSON.stringify({})
+        });
+      } else {
+        if (!confirm("هشدار: دسترسی عمومی سایت متوقف می‌شود. ادامه می‌دهید؟")) return;
+
+        const second = prompt("برای تأیید، عبارت LOCK را وارد کنید:");
+        if (second !== "LOCK") return;
+
+        await request("/api/admin/site-control/lock", {
+          method: "POST",
+          body: JSON.stringify({
+            reason: reasonEl.value || "MANUAL_LOCK"
+          })
+        });
+      }
+
+      await refresh();
+    } catch (err) {
+      alert("عملیات انجام نشد: " + err.message);
+    }
+  });
+
+  refresh();
+})();
+</script>
+<!-- END ALPHA-6 SITE LOCK MANAGEMENT -->
+
 </body>
 </html>

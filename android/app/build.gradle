@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     namespace 'com.nrn.alpha6'
-    compileSdk 34
+    compileSdk 35
 
     defaultConfig {
         applicationId 'com.nrn.alpha6'

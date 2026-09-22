@@ -3,7 +3,8 @@ name: Build Android APK
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   build:
@@ -28,18 +29,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Setup Gradle 8.13
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
 
-              - name: Setup Gradle 8.13
-                uses: gradle/actions/setup-gradle@v4
-                with:
-                  gradle-version: '8.13'
+      - name: Verify Gradle
+        run: gradle --version
 
-              - name: Verify Gradle
-                run: gradle --version
-
-              - name: Build APK
-                working-directory: android
-                run: gradle :app:assembleDebug --no-daemon
+      - name: Build APK
+        working-directory: android
+        run: gradle :app:assembleDebug --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4

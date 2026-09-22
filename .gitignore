@@ -3,3 +3,25 @@ node_modules/
 database/*.db
 logs/*
 backups/*
+
+# Android/Gradle generated files
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties
+
+# Local Gradle/build files
+.gradle/
+build/
+
+# Local environment/secrets
+.env
+.env.*
+!.env.example
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties
+android/**/*.bak
+android/**/*.backup
+android/**/*before-final
